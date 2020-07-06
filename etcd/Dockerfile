@@ -1,1 +1,1 @@
-FROM k8s.gcr.io/etcd:3.3.10
+FROM gcr.io/etcd-development/etcd:v3.4.9
