@@ -1,0 +1,29 @@
+FROM alpine
+USER root
+
+#apk add --no-cache python3 python3-dev py-pip
+
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.tuna.tsinghua.edu.cn/g' /etc/apk/repositories && \
+	apk add  --no-cache openrc docker git curl tar gcc g++ make \
+    bash shadow openjdk8 python3 python3-dev py-pip openssl-dev libffi-dev \
+    libstdc++ harfbuzz nss freetype ttf-freefont chromium chromium-chromedriver && \
+    mkdir -p /root/.kube && \
+    usermod -a -G docker root
+
+COPY requirements.txt /
+COPY config /root/.kube/
+
+RUN pip install -i http://mirrors.aliyun.com/pypi/simple/ --trusted-host mirrors.aliyun.com -r /requirements.txt
+
+RUN rm -rf /var/cache/apk/* && \
+    rm -rf ~/.cache/pip
+#-----------------安装 kubectl--------------------#
+COPY kubectl /usr/local/bin/
+RUN chmod +x /usr/local/bin/kubectl
+# ------------------------------------------------#
+
+#---------------安装 sonar-scanner-----------------#
+COPY sonar-scanner /usr/lib/sonar-scanner
+RUN ln -s /usr/lib/sonar-scanner/bin/sonar-scanner /usr/local/bin/sonar-scanner && chmod +x /usr/local/bin/sonar-scanner
+ENV SONAR_RUNNER_HOME=/usr/lib/sonar-scanner
+# ------------------------------------------------#
